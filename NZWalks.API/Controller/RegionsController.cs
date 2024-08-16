@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NZWalks.API.Data;
 using NZWalks.API.Models.Domain;
+using NZWalks.API.Models.DTO;
 
 namespace NZWalks.API.Controller
 {
@@ -24,25 +25,57 @@ namespace NZWalks.API.Controller
 
         //Get all the regions
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAllRegion()
         {
             //Region is the DbSet...
-            var regions = dBContext.Regions.ToList();
+            var regionsDomain = dBContext.Regions.ToList();
             //System.Console.WriteLine(regions);
             //if we want to talk to the database...
-            return Ok(regions);
+
+            //WE NEED TO MAP DOMAIN TO DTO
+            var regionsDTO = new List<RegionDTO>();
+
+            foreach (var region in regionsDomain)
+            {
+                // regionsDTO.Add(
+                //     new RegionDTO()
+                //     {
+                //         Id = region.Id,
+                //         Name = region.Name,
+                //         Code = region.Code,
+                //         RegionImageURL = region.RegionImageURL
+                //     }
+                // );
+                RegionDTO regionsDTOS = new RegionDTO();
+                regionsDTOS.Id = region.Id;
+                regionsDTOS.Name = region.Name;
+                regionsDTOS.Code = region.Code;
+                regionsDTOS.RegionImageURL = region.RegionImageURL;
+
+                regionsDTO.Add(regionsDTOS);
+            }
+            return Ok(regionsDTO);
         }
 
         [HttpGet]
         [Route("{id:Guid}")]
         public IActionResult GetRegionById(Guid id)
         {
-            var region = dBContext.Regions.Find(id);
+            var regionDomain = dBContext.Regions.Find(id);
 
-            if (region == null)
+            if (regionDomain == null)
                 return NotFound();
             else
-                return Ok(region);
+            {
+                RegionDTO regionDTO = new RegionDTO()
+                {
+                    Id = regionDomain.Id,
+                    Name = regionDomain.Name,
+                    Code = regionDomain.Code,
+                    RegionImageURL = regionDomain.RegionImageURL
+                };
+                return Ok(regionDTO);
+            }
         }
     }
 }
