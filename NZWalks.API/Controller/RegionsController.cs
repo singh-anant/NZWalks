@@ -23,12 +23,13 @@ namespace NZWalks.API.Controller
             this.dBContext = dBContext;
         }
 
+        //SO now we are going to make everything asynchronus so that MAIN Thread does not get ever blocked...
         //Get all the regions
         [HttpGet]
-        public IActionResult GetAllRegion()
+        public async Task<IActionResult> GetAllRegion()
         {
             //Region is the DbSet...
-            var regionsDomain = dBContext.Regions.ToList();
+            var regionsDomain = await dBContext.Regions.ToListAsync();
             //System.Console.WriteLine(regions);
             //if we want to talk to the database...
 
@@ -59,9 +60,9 @@ namespace NZWalks.API.Controller
 
         [HttpGet]
         [Route("{id:Guid}")]
-        public IActionResult GetRegionById([FromRoute] Guid id)
+        public async Task<IActionResult> GetRegionById([FromRoute] Guid id)
         {
-            var regionDomain = dBContext.Regions.Find(id);
+            var regionDomain = await dBContext.Regions.FindAsync(id);
 
             if (regionDomain == null)
                 return NotFound();
@@ -79,7 +80,9 @@ namespace NZWalks.API.Controller
         }
 
         [HttpPost]
-        public IActionResult CreateRegion([FromBody] AddRegionRequestDTO addRegionRequestDTO)
+        public async Task<IActionResult> CreateRegion(
+            [FromBody] AddRegionRequestDTO addRegionRequestDTO
+        )
         {
             //Map or Convert DTO to Domain Model
             var regionDomainModel = new Region
@@ -89,8 +92,8 @@ namespace NZWalks.API.Controller
                 RegionImageURL = addRegionRequestDTO.RegionImageURL
             };
             //here we are saving it to the database..
-            dBContext.Regions.Add(regionDomainModel);
-            dBContext.SaveChanges();
+            await dBContext.Regions.AddAsync(regionDomainModel);
+            await dBContext.SaveChangesAsync();
 
             return Ok();
         }
@@ -99,13 +102,13 @@ namespace NZWalks.API.Controller
         //PUT:https://localhost:1234/api/regions/{id}
         [HttpPut]
         [Route("{id:Guid}")]
-        public IActionResult UpdateRegion(
+        public async Task<IActionResult> UpdateRegion(
             [FromRoute] Guid id,
             [FromBody] UpdateRegionRequestDTO updateRegionRequestDTO
         )
         {
             //cheking the region if it exist or not
-            var regionDomainModel = dBContext.Regions.Find(id);
+            var regionDomainModel = await dBContext.Regions.FindAsync(id);
             if (regionDomainModel == null)
                 return NotFound();
             else
@@ -116,7 +119,7 @@ namespace NZWalks.API.Controller
                 regionDomainModel.Name = updateRegionRequestDTO.Name;
                 regionDomainModel.RegionImageURL = updateRegionRequestDTO.RegionImageURL;
                 //saving the changes
-                dBContext.SaveChanges();
+                await dBContext.SaveChangesAsync();
 
                 //once again conveting it back..I dont know why
                 var regionDTO = new RegionDTO();
@@ -131,15 +134,16 @@ namespace NZWalks.API.Controller
         //DELETE:https://localhost:1234/api/regions/{id}
         [HttpDelete]
         [Route("{id:Guid}")]
-        public IActionResult DeleteRegion(Guid id)
+        public async Task<IActionResult> DeleteRegion(Guid id)
         {
-            var regionDomainModel = dBContext.Regions.Find(id);
+            var regionDomainModel = await dBContext.Regions.FindAsync(id);
             if (regionDomainModel == null)
                 return NotFound();
             else
             {
+                //Remove is a synchronous Function
                 dBContext.Regions.Remove(regionDomainModel);
-                dBContext.SaveChanges();
+                await dBContext.SaveChangesAsync();
                 return Ok();
             }
         }
