@@ -59,7 +59,7 @@ namespace NZWalks.API.Controller
 
         [HttpGet]
         [Route("{id:Guid}")]
-        public IActionResult GetRegionById(Guid id)
+        public IActionResult GetRegionById([FromRoute] Guid id)
         {
             var regionDomain = dBContext.Regions.Find(id);
 
@@ -76,6 +76,23 @@ namespace NZWalks.API.Controller
                 };
                 return Ok(regionDTO);
             }
+        }
+
+        [HttpPost]
+        public IActionResult CreateRegion([FromBody] AddRegionRequestDTO addRegionRequestDTO)
+        {
+            //Map or Convert DTO to Domain Model
+            var regionDomainModel = new Region
+            {
+                Code = addRegionRequestDTO.Code,
+                Name = addRegionRequestDTO.Name,
+                RegionImageURL = addRegionRequestDTO.RegionImageURL
+            };
+            //here we are saving it to the database..
+            dBContext.Regions.Add(regionDomainModel);
+            dBContext.SaveChanges();
+
+            return Ok();
         }
     }
 }
