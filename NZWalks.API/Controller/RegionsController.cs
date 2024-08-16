@@ -94,5 +94,38 @@ namespace NZWalks.API.Controller
 
             return Ok();
         }
+
+        //Updating a Region...
+        //PUT:https://localhost:1234/api/regions/{id}
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public IActionResult UpdateRegion(
+            [FromRoute] Guid id,
+            [FromBody] UpdateRegionRequestDTO updateRegionRequestDTO
+        )
+        {
+            //cheking the region if it exist or not
+            var regionDomainModel = dBContext.Regions.Find(id);
+            if (regionDomainModel == null)
+                return NotFound();
+            else
+            {
+                //start converitng
+                //first start changing values of regionDomainModel
+                regionDomainModel.Code = updateRegionRequestDTO.Code;
+                regionDomainModel.Name = updateRegionRequestDTO.Name;
+                regionDomainModel.RegionImageURL = updateRegionRequestDTO.RegionImageURL;
+                //saving the changes
+                dBContext.SaveChanges();
+
+                //once again conveting it back..I dont know why
+                var regionDTO = new RegionDTO();
+                regionDTO.Code = regionDomainModel.Code;
+                regionDTO.Name = regionDomainModel.Name;
+                regionDTO.RegionImageURL = regionDomainModel.RegionImageURL;
+
+                return Ok(regionDTO);
+            }
+        }
     }
 }
